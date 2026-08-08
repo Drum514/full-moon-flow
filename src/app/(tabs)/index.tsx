@@ -39,6 +39,7 @@ export default function CalendarScreen() {
   const [selectorVisible, setSelectorVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedIntensity, setSelectedIntensity] = useState<FlowIntensity | null>(null);
+  const [selectedMood, setSelectedMood] = useState<number | null>(null);
 
   // Load initial data and check onboarding
   useEffect(() => {
@@ -94,6 +95,7 @@ export default function CalendarScreen() {
     const existing = monthEntries.find((e) => e.date === date);
     setSelectedDate(date);
     setSelectedIntensity(existing?.flowIntensity ?? null);
+    setSelectedMood(existing?.moodScore ?? null);
     setSelectorVisible(true);
   };
 
@@ -101,7 +103,7 @@ export default function CalendarScreen() {
 
   const handleSelectIntensity = async (intensity: FlowIntensity) => {
     if (selectedDate) {
-      await logEntry(selectedDate, intensity);
+      await logEntry(selectedDate, intensity, selectedMood);
       await loadMonthEntries();
     }
     setSelectorVisible(false);
@@ -143,6 +145,8 @@ export default function CalendarScreen() {
         visible={selectorVisible}
         date={selectedDate}
         currentIntensity={selectedIntensity}
+        moodScore={selectedMood}
+        onMoodChange={setSelectedMood}
         onSelect={handleSelectIntensity}
         onDelete={handleDeleteEntry}
         onClose={() => setSelectorVisible(false)}

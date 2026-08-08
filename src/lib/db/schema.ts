@@ -37,6 +37,15 @@ export async function initializeDatabase(db: SQLiteDatabase): Promise<void> {
       value TEXT NOT NULL
     );
   `);
+
+  // Migration: add optional mood_score column to cycle_entries
+  try {
+    await db.execAsync(
+      'ALTER TABLE cycle_entries ADD COLUMN mood_score INTEGER CHECK (mood_score IS NULL OR (mood_score >= 1 AND mood_score <= 10))'
+    );
+  } catch {
+    // Column already exists — safe to ignore after first migration
+  }
 }
 
 /** Database file name */

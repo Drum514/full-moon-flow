@@ -23,6 +23,7 @@ import {
   flowLabels,
   type FlowIntensity,
 } from '@/design/tokens';
+import { MoodSlider } from './MoodSlider';
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -33,6 +34,8 @@ interface FlowSelectorProps {
   onSelect: (intensity: FlowIntensity) => void;
   onDelete: () => void;
   onClose: () => void;
+  moodScore: number | null;
+  onMoodChange: (score: number | null) => void;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────
@@ -58,6 +61,8 @@ export function FlowSelector({
   onSelect,
   onDelete,
   onClose,
+  moodScore,
+  onMoodChange,
 }: FlowSelectorProps) {
   return (
     <Modal
@@ -118,6 +123,9 @@ export function FlowSelector({
               );
             })}
           </View>
+
+          {/* Mood slider (optional) */}
+          <MoodSlider value={moodScore} onChange={onMoodChange} />
 
           {/* Delete button (only if entry exists) */}
           {currentIntensity && (

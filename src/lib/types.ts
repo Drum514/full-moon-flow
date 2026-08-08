@@ -16,6 +16,8 @@ export interface CycleEntry {
   flowIntensity: FlowIntensity;
   createdAt: string;
   updatedAt: string;
+  /** Optional overall mood, 1 (low) to 10 (great). Null if not recorded. */
+  moodScore: number | null;
 }
 
 /**

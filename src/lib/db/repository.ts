@@ -15,7 +15,7 @@ import type { CycleEntry } from '@/lib/types';
 // ─── Repository Interface ────────────────────────────────────────────
 
 export interface CycleEntryRepository {
-  upsertEntry(date: string, intensity: FlowIntensity): Promise<void>;
+  upsertEntry(date: string, intensity: FlowIntensity, moodScore?: number | null): Promise<void>;
   deleteEntry(date: string): Promise<void>;
   getEntry(date: string): Promise<CycleEntry | null>;
   getEntriesInRange(startDate: string, endDate: string): Promise<CycleEntry[]>;
@@ -34,6 +34,7 @@ interface CycleEntryRow {
   id: string;
   date: string;
   flow_intensity: string;
+  mood_score: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -43,6 +44,7 @@ function rowToEntry(row: CycleEntryRow): CycleEntry {
     id: row.id,
     date: row.date,
     flowIntensity: row.flow_intensity as FlowIntensity,
+    moodScore: row.mood_score ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -61,21 +63,22 @@ function generateId(): string {
 export class SQLiteCycleEntryRepository implements CycleEntryRepository {
   constructor(private db: SQLiteDatabase) {}
 
-  async upsertEntry(date: string, intensity: FlowIntensity): Promise<void> {
+  async upsertEntry(date: string, intensity: FlowIntensity, moodScore?: number | null): Promise<void> {
+    const mood = moodScore ?? null;
     const existing = await this.getEntry(date);
     if (existing) {
       await this.db.runAsync(
         `UPDATE cycle_entries 
-         SET flow_intensity = ?, updated_at = datetime('now') 
+         SET flow_intensity = ?, mood_score = ?, updated_at = datetime('now') 
          WHERE date = ?`,
-        [intensity, date]
+        [intensity, mood, date]
       );
     } else {
       const id = generateId();
       await this.db.runAsync(
-        `INSERT INTO cycle_entries (id, date, flow_intensity) 
-         VALUES (?, ?, ?)`,
-        [id, date, intensity]
+        `INSERT INTO cycle_entries (id, date, flow_intensity, mood_score) 
+         VALUES (?, ?, ?, ?)`,
+        [id, date, intensity, mood]
       );
     }
   }

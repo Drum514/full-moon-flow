@@ -32,10 +32,10 @@ export function useCycleData() {
     store.setIsLoaded(true);
   }, [repo, store]);
 
-  /** Log or update flow intensity for a date. */
+  /** Log or update flow intensity (and optional mood) for a date. */
   const logEntry = useCallback(
-    async (date: string, intensity: FlowIntensity) => {
-      await repo.upsertEntry(date, intensity);
+    async (date: string, intensity: FlowIntensity, moodScore?: number | null) => {
+      await repo.upsertEntry(date, intensity, moodScore);
       await refreshData();
     },
     [repo, refreshData]

@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { useCycleData } from '@/hooks/useCycleData';
 import { colors, spacing, radii, typography, shadows } from '@/design/tokens';
+import { MOOD_SYMBOLS } from '@/components/MoodSlider';
 import type { Cycle } from '@/lib/types';
 
 export default function HistoryScreen() {
@@ -70,6 +71,21 @@ export default function HistoryScreen() {
             </Text>
           </View>
         </View>
+
+        {/* Mood indicators (only for entries that have mood scores) */}
+        {(() => {
+          const withMood = item.entries.filter((e) => e.moodScore !== null);
+          if (withMood.length === 0) return null;
+          return (
+            <View style={styles.moodRow}>
+              {withMood.map((e) => (
+                <Text key={e.id} style={styles.moodEmoji}>
+                  {MOOD_SYMBOLS[e.moodScore!]}
+                </Text>
+              ))}
+            </View>
+          );
+        })()}
       </View>
     );
   };
@@ -192,6 +208,17 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: spacing.md,
+  },
+  moodRow: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+    marginTop: spacing.sm,
+    paddingTop: spacing.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.borderLight,
+  },
+  moodEmoji: {
+    fontSize: 14,
   },
   emptyContainer: {
     flex: 1,
