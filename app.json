@@ -2,7 +2,7 @@
   "expo": {
     "name": "Full Moon Flow",
     "slug": "fullmoon",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "fullmoon",
@@ -33,7 +33,8 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 100
         }
-      ]
+      ],
+      "expo-image"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -44,6 +45,12 @@
       "eas": {
         "projectId": "8eb6a98e-bcdc-4e2f-90d1-f2f8c97a642e"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/8eb6a98e-bcdc-4e2f-90d1-f2f8c97a642e"
     }
   }
 }
