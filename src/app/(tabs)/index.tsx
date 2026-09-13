@@ -89,6 +89,11 @@ export default function CalendarScreen() {
     }
   };
 
+  const goToMonthYear = (year: number, month: number) => {
+    setCurrentYear(year);
+    setCurrentMonth(month);
+  };
+
   // ─── Day Press Handler ──────────────────────────────────────────
 
   const handleDayPress = (date: string) => {
@@ -130,6 +135,7 @@ export default function CalendarScreen() {
           onDayPress={handleDayPress}
           onPrevMonth={goToPrevMonth}
           onNextMonth={goToNextMonth}
+          onMonthYearSelect={goToMonthYear}
         />
 
         {/* Flow legend */}

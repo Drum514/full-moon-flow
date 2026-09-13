@@ -6,13 +6,18 @@
  * with a lavender ring for today.
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
   Pressable,
   StyleSheet,
+  Platform,
+  Modal,
+  Button,
+  TouchableWithoutFeedback,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { colors, spacing, radii, typography, flowColors } from '@/design/tokens';
 import type { CycleEntry } from '@/lib/types';
 import type { FlowIntensity } from '@/design/tokens';
@@ -26,6 +31,7 @@ interface CalendarProps {
   onDayPress: (date: string) => void;
   onPrevMonth: () => void;
   onNextMonth: () => void;
+  onMonthYearSelect?: (year: number, month: number) => void;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────
@@ -54,8 +60,39 @@ export function Calendar({
   onDayPress,
   onPrevMonth,
   onNextMonth,
+  onMonthYearSelect,
 }: CalendarProps) {
   const today = getTodayString();
+
+  const [showPicker, setShowPicker] = useState(false);
+  const [tempDate, setTempDate] = useState(new Date(year, month - 1, 1));
+
+  const handleOpenPicker = () => {
+    setTempDate(new Date(year, month - 1, 1));
+    setShowPicker(true);
+  };
+
+  const onDateChange = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowPicker(false);
+    }
+    if (selectedDate) {
+      if (Platform.OS === 'android') {
+        onMonthYearSelect?.(selectedDate.getFullYear(), selectedDate.getMonth() + 1);
+      } else {
+        setTempDate(selectedDate);
+      }
+    }
+  };
+
+  const onConfirmiOS = () => {
+    setShowPicker(false);
+    onMonthYearSelect?.(tempDate.getFullYear(), tempDate.getMonth() + 1);
+  };
+
+  const onCanceliOS = () => {
+    setShowPicker(false);
+  };
 
   // Build a lookup map: date string → flow intensity
   const entryMap = useMemo(() => {
@@ -110,9 +147,11 @@ export function Calendar({
           <Text style={styles.navText}>‹</Text>
         </Pressable>
 
-        <Text style={styles.monthTitle}>
-          {MONTH_NAMES[month - 1]} {year}
-        </Text>
+        <Pressable onPress={handleOpenPicker} hitSlop={12} style={styles.titlePressable}>
+          <Text style={styles.monthTitle}>
+            {MONTH_NAMES[month - 1]} {year}
+          </Text>
+        </Pressable>
 
         <Pressable
           onPress={onNextMonth}
@@ -122,6 +161,43 @@ export function Calendar({
           <Text style={styles.navText}>›</Text>
         </Pressable>
       </View>
+
+      {/* Month/Year Picker */}
+      {Platform.OS === 'android' && showPicker && (
+        <DateTimePicker
+          value={new Date(year, month - 1, 1)}
+          mode="date"
+          display="default"
+          onChange={onDateChange}
+        />
+      )}
+      {Platform.OS === 'ios' && (
+        <Modal
+          visible={showPicker}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={onCanceliOS}
+        >
+          <TouchableWithoutFeedback onPress={onCanceliOS}>
+            <View style={styles.modalOverlay}>
+              <TouchableWithoutFeedback>
+                <View style={styles.pickerContainer}>
+                  <View style={styles.pickerHeader}>
+                    <Button title="Cancel" onPress={onCanceliOS} />
+                    <Button title="Done" onPress={onConfirmiOS} />
+                  </View>
+                  <DateTimePicker
+                    value={tempDate}
+                    mode="date"
+                    display="spinner"
+                    onChange={onDateChange}
+                  />
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+      )}
 
       {/* Day-of-week labels */}
       <View style={styles.weekRow}>
@@ -275,5 +351,29 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  titlePressable: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    justifyContent: 'flex-end',
+  },
+  pickerContainer: {
+    backgroundColor: colors.background,
+    borderTopLeftRadius: radii.lg,
+    borderTopRightRadius: radii.lg,
+    paddingBottom: spacing.xl,
+  },
+  pickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
 });
