@@ -31,11 +31,16 @@ interface FlowSelectorProps {
   visible: boolean;
   date: string | null;
   currentIntensity: FlowIntensity | null;
+  /** Called when the user taps a flow pill (updates draft state, does NOT save). */
   onSelect: (intensity: FlowIntensity) => void;
+  /** Called when the user taps Save — persists the entry to the DB. */
+  onSave: () => void;
   onDelete: () => void;
   onClose: () => void;
   moodScore: number | null;
   onMoodChange: (score: number | null) => void;
+  /** True when editing an entry that already exists in the database. */
+  isExistingEntry: boolean;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────
@@ -59,10 +64,12 @@ export function FlowSelector({
   date,
   currentIntensity,
   onSelect,
+  onSave,
   onDelete,
   onClose,
   moodScore,
   onMoodChange,
+  isExistingEntry,
 }: FlowSelectorProps) {
   return (
     <Modal
@@ -84,7 +91,7 @@ export function FlowSelector({
           )}
 
           <Text style={styles.label}>
-            {currentIntensity ? 'Update flow intensity' : 'Log flow intensity'}
+            {isExistingEntry ? 'Update flow intensity' : 'Log flow intensity'}
           </Text>
 
           {/* Intensity buttons */}
@@ -127,8 +134,27 @@ export function FlowSelector({
           {/* Mood slider (optional) */}
           <MoodSlider value={moodScore} onChange={onMoodChange} />
 
-          {/* Delete button (only if entry exists) */}
-          {currentIntensity && (
+          {/* Save button */}
+          <Pressable
+            style={[
+              styles.saveButton,
+              !currentIntensity && styles.saveButtonDisabled,
+            ]}
+            onPress={onSave}
+            disabled={!currentIntensity}
+          >
+            <Text
+              style={[
+                styles.saveText,
+                !currentIntensity && styles.saveTextDisabled,
+              ]}
+            >
+              {isExistingEntry ? 'Update' : 'Save'}
+            </Text>
+          </Pressable>
+
+          {/* Delete button (only if entry exists in DB) */}
+          {isExistingEntry && (
             <Pressable style={styles.deleteButton} onPress={onDelete}>
               <Text style={styles.deleteText}>Remove entry</Text>
             </Pressable>
@@ -212,6 +238,25 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.body,
     color: colors.text,
     marginTop: spacing.xs,
+  },
+  saveButton: {
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+    marginTop: spacing.lg,
+    marginBottom: spacing.sm,
+    backgroundColor: colors.tabActive,
+    borderRadius: radii.md,
+  },
+  saveButtonDisabled: {
+    backgroundColor: colors.border,
+  },
+  saveText: {
+    fontFamily: typography.fontMedium,
+    fontSize: typography.sizes.body,
+    color: '#FFFFFF',
+  },
+  saveTextDisabled: {
+    color: colors.textTertiary,
   },
   deleteButton: {
     alignItems: 'center',

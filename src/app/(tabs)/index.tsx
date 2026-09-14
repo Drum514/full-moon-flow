@@ -40,6 +40,7 @@ export default function CalendarScreen() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedIntensity, setSelectedIntensity] = useState<FlowIntensity | null>(null);
   const [selectedMood, setSelectedMood] = useState<number | null>(null);
+  const [isExistingEntry, setIsExistingEntry] = useState(false);
 
   // Load initial data and check onboarding
   useEffect(() => {
@@ -101,14 +102,21 @@ export default function CalendarScreen() {
     setSelectedDate(date);
     setSelectedIntensity(existing?.flowIntensity ?? null);
     setSelectedMood(existing?.moodScore ?? null);
+    setIsExistingEntry(!!existing);
     setSelectorVisible(true);
   };
 
   // ─── Flow Selector Handlers ─────────────────────────────────────
 
-  const handleSelectIntensity = async (intensity: FlowIntensity) => {
-    if (selectedDate) {
-      await logEntry(selectedDate, intensity, selectedMood);
+  /** Update draft flow intensity (keeps the sheet open). */
+  const handleIntensityChange = (intensity: FlowIntensity) => {
+    setSelectedIntensity(intensity);
+  };
+
+  /** Persist the current draft (flow + mood) to the DB and close the sheet. */
+  const handleSave = async () => {
+    if (selectedDate && selectedIntensity) {
+      await logEntry(selectedDate, selectedIntensity, selectedMood);
       await loadMonthEntries();
     }
     setSelectorVisible(false);
@@ -153,9 +161,11 @@ export default function CalendarScreen() {
         currentIntensity={selectedIntensity}
         moodScore={selectedMood}
         onMoodChange={setSelectedMood}
-        onSelect={handleSelectIntensity}
+        onSelect={handleIntensityChange}
+        onSave={handleSave}
         onDelete={handleDeleteEntry}
         onClose={() => setSelectorVisible(false)}
+        isExistingEntry={isExistingEntry}
       />
     </View>
   );
