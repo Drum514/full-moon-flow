@@ -19,12 +19,18 @@ function TabIcon({ label, focused }: { label: string; focused: boolean }) {
     Settings: '⚙︎',
   };
 
+  // Optical size compensation — some glyphs render smaller at the same fontSize
+  const sizeMap: Record<string, number> = {
+    Settings: 26,
+  };
+
   return (
     <View style={tabIconStyles.container}>
       <Text
         style={[
           tabIconStyles.icon,
           { color: focused ? colors.tabActive : colors.tabInactive },
+          sizeMap[label] ? { fontSize: sizeMap[label] } : undefined,
         ]}
       >
         {iconMap[label] || '•'}

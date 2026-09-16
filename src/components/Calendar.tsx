@@ -19,8 +19,10 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { colors, spacing, radii, typography, flowColors } from '@/design/tokens';
+import { addDays } from '@/lib/cycle-logic';
 import type { CycleEntry } from '@/lib/types';
 import type { FlowIntensity } from '@/design/tokens';
+import type { FertilityPrediction } from '@/lib/cycle-logic';
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -28,6 +30,7 @@ interface CalendarProps {
   year: number;
   month: number; // 1-based (January = 1)
   entries: CycleEntry[];
+  fertilityPrediction?: FertilityPrediction | null;
   onDayPress: (date: string) => void;
   onPrevMonth: () => void;
   onNextMonth: () => void;
@@ -57,6 +60,7 @@ export function Calendar({
   year,
   month,
   entries,
+  fertilityPrediction,
   onDayPress,
   onPrevMonth,
   onNextMonth,
@@ -102,6 +106,31 @@ export function Calendar({
     }
     return map;
   }, [entries]);
+
+  // Build fertility day status map for the current month
+  const fertilityMap = useMemo(() => {
+    const map = new Map<string, 'peak' | 'fertile'>();
+    if (!fertilityPrediction) return map;
+
+    const todayStr = getTodayString();
+    const { fertileWindowStart, fertileWindowEnd, peakStart, peakEnd } = fertilityPrediction;
+
+    // Generate all dates in the fertile window
+    let current = fertileWindowStart;
+    while (current <= fertileWindowEnd) {
+      // Only show for current/future dates, not past
+      if (current >= todayStr) {
+        // Check if this date falls within the displayed month
+        const [y, m] = current.split('-').map(Number);
+        if (y === year && m === month) {
+          const isPeak = current >= peakStart && current <= peakEnd;
+          map.set(current, isPeak ? 'peak' : 'fertile');
+        }
+      }
+      current = addDays(current, 1);
+    }
+    return map;
+  }, [fertilityPrediction, year, month]);
 
   // Build the grid of day cells
   const calendarDays = useMemo(() => {
@@ -259,6 +288,19 @@ export function Calendar({
                     {day}
                   </Text>
                 )}
+                {fertilityMap.has(dateStr) && (
+                  <View
+                    style={[
+                      styles.fertilityDot,
+                      {
+                        backgroundColor:
+                          fertilityMap.get(dateStr) === 'peak'
+                            ? colors.fertilityPeak
+                            : colors.fertility,
+                      },
+                    ]}
+                  />
+                )}
               </Pressable>
             );
           })}
@@ -351,6 +393,13 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  fertilityDot: {
+    position: 'absolute',
+    bottom: 2,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
   titlePressable: {
     paddingHorizontal: spacing.sm,

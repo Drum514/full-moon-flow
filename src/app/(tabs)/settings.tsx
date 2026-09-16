@@ -5,7 +5,7 @@
  * Structured to accept future settings without rework.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,14 +13,19 @@ import {
   ScrollView,
   Alert,
   StyleSheet,
+  Switch,
 } from 'react-native';
 import { useCycleData } from '@/hooks/useCycleData';
 import { shareCSV } from '@/lib/export/csv';
 import { colors, spacing, radii, typography, shadows } from '@/design/tokens';
 
 export default function SettingsScreen() {
-  const { entries } = useCycleData();
+  const { entries, fertilityEnabled, setFertilityEnabled, loadFertilitySetting } = useCycleData();
   const [isExporting, setIsExporting] = useState(false);
+
+  useEffect(() => {
+    loadFertilitySetting();
+  }, []);
 
   const handleExport = async () => {
     if (entries.length === 0) {
@@ -50,6 +55,25 @@ export default function SettingsScreen() {
       contentContainerStyle={styles.scrollContent}
       showsVerticalScrollIndicator={false}
     >
+      {/* Features section */}
+      <Text style={styles.sectionTitle}>Features</Text>
+      <View style={styles.card}>
+        <View style={styles.row}>
+          <View style={styles.rowContent}>
+            <Text style={styles.rowTitle}>Fertility indicators</Text>
+            <Text style={styles.rowDescription}>
+              Show estimated fertile window on calendar and analytics
+            </Text>
+          </View>
+          <Switch
+            value={fertilityEnabled}
+            onValueChange={setFertilityEnabled}
+            trackColor={{ false: colors.border, true: colors.accentAlt }}
+            thumbColor={colors.surface}
+          />
+        </View>
+      </View>
+
       {/* Export section */}
       <Text style={styles.sectionTitle}>Data</Text>
       <View style={styles.card}>

@@ -25,7 +25,7 @@ export const colors = {
 
   // Accents
   accent: '#C5B8D9', // soft lavender
-  accentAlt: '#B8CCBA', // sage green
+  accentAlt: '#5d8962', // sage green
 
   // UI chrome
   border: '#EDE8E4',
@@ -44,6 +44,10 @@ export const colors = {
   // Semantic
   today: '#C5B8D9', // lavender ring for today
   prediction: '#C5B8D9', // lavender for predicted days
+
+  // Fertility indicators (sage green spectrum)
+  fertility: '#B8CCBA', // lighter sage — standard fertile days
+  fertilityPeak: '#5d8962', // darker sage — peak fertility days (ovulation −2, −1)
 } as const;
 
 // ─── Flow Intensity Map ──────────────────────────────────────────────

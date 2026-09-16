@@ -20,6 +20,8 @@ interface AppState {
   isLoaded: boolean;
   /** Whether onboarding has been completed */
   onboardingComplete: boolean;
+  /** Whether fertility indicators are enabled */
+  fertilityEnabled: boolean;
 
   // Actions
   setEntries: (entries: CycleEntry[]) => void;
@@ -27,6 +29,7 @@ interface AppState {
   setSummary: (summary: CycleSummary) => void;
   setIsLoaded: (loaded: boolean) => void;
   setOnboardingComplete: (complete: boolean) => void;
+  setFertilityEnabled: (enabled: boolean) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -35,10 +38,12 @@ export const useAppStore = create<AppState>((set) => ({
   summary: null,
   isLoaded: false,
   onboardingComplete: false,
+  fertilityEnabled: true,
 
   setEntries: (entries) => set({ entries }),
   setCycles: (cycles) => set({ cycles }),
   setSummary: (summary) => set({ summary }),
   setIsLoaded: (isLoaded) => set({ isLoaded }),
   setOnboardingComplete: (complete) => set({ onboardingComplete: complete }),
+  setFertilityEnabled: (enabled) => set({ fertilityEnabled: enabled }),
 }));

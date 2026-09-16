@@ -73,6 +73,22 @@ export function useCycleData() {
     store.setOnboardingComplete(true);
   }, [metadata, store]);
 
+  /** Load the fertility toggle setting from DB. */
+  const loadFertilitySetting = useCallback(async () => {
+    const value = await metadata.getValue('fertility_enabled');
+    // Default to true if not set
+    store.setFertilityEnabled(value !== 'false');
+  }, [metadata, store]);
+
+  /** Toggle fertility indicators on/off, persisting to DB. */
+  const setFertilityEnabled = useCallback(
+    async (enabled: boolean) => {
+      await metadata.setValue('fertility_enabled', enabled ? 'true' : 'false');
+      store.setFertilityEnabled(enabled);
+    },
+    [metadata, store]
+  );
+
   return {
     // State (from store)
     entries: store.entries,
@@ -80,6 +96,7 @@ export function useCycleData() {
     summary: store.summary,
     isLoaded: store.isLoaded,
     onboardingComplete: store.onboardingComplete,
+    fertilityEnabled: store.fertilityEnabled,
 
     // Actions
     refreshData,
@@ -88,5 +105,7 @@ export function useCycleData() {
     getEntriesForMonth,
     checkOnboarding,
     completeOnboarding,
+    loadFertilitySetting,
+    setFertilityEnabled,
   };
 }

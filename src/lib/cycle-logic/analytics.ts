@@ -7,6 +7,8 @@
 
 import type { Cycle, TrendPoint, PeriodPrediction } from '@/lib/types';
 import { addDays } from './detection';
+import { predictFertility } from './fertility';
+import type { FertilityPrediction } from './fertility';
 
 // ─── Averages ────────────────────────────────────────────────────────
 
@@ -141,6 +143,7 @@ export interface CycleSummary {
   avgCycleLengthRolling3: number | null;
   avgPeriodDuration: number | null;
   prediction: PeriodPrediction | null;
+  fertility: FertilityPrediction | null;
   trend: TrendPoint[];
 }
 
@@ -156,6 +159,7 @@ export function computeSummary(cycles: Cycle[]): CycleSummary {
     avgCycleLengthRolling3: averageCycleLength(cycles, 3),
     avgPeriodDuration: averagePeriodDuration(cycles),
     prediction: predictNextPeriod(cycles),
+    fertility: predictFertility(cycles),
     trend: cycleLengthTrend(cycles),
   };
 }

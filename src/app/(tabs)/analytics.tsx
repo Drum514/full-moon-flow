@@ -15,15 +15,20 @@ import {
 import { useCycleData } from '@/hooks/useCycleData';
 import { colors, spacing, radii, typography, shadows } from '@/design/tokens';
 import type { CycleSummary } from '@/lib/cycle-logic';
+import type { FertilityPrediction } from '@/lib/cycle-logic';
 import type { PeriodPrediction, TrendPoint } from '@/lib/types';
 
 export default function AnalyticsScreen() {
-  const { summary, isLoaded, refreshData } = useCycleData();
+  const { summary, isLoaded, refreshData, fertilityEnabled, loadFertilitySetting } = useCycleData();
 
   useEffect(() => {
-    if (!isLoaded) {
-      refreshData();
-    }
+    const init = async () => {
+      await loadFertilitySetting();
+      if (!isLoaded) {
+        await refreshData();
+      }
+    };
+    init();
   }, [isLoaded]);
 
   if (!isLoaded || !summary) {
@@ -83,6 +88,11 @@ export default function AnalyticsScreen() {
       {/* Prediction card */}
       {summary.prediction && (
         <PredictionCard prediction={summary.prediction} />
+      )}
+
+      {/* Fertility card */}
+      {fertilityEnabled && summary.fertility && (
+        <FertilityCard fertility={summary.fertility} />
       )}
 
       {/* Trend chart */}
@@ -145,6 +155,60 @@ function PredictionCard({ prediction }: { prediction: PeriodPrediction }) {
         <Text style={styles.disclaimerIcon}>ℹ</Text>
         <Text style={styles.disclaimer}>
           {confidenceLabels[prediction.confidence]}. This is an estimate, not a guarantee.
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+// ─── Fertility Card ──────────────────────────────────────────────────
+
+function FertilityCard({ fertility }: { fertility: FertilityPrediction }) {
+  const formatRange = (start: string, end: string) => {
+    const s = new Date(start + 'T00:00:00');
+    const e = new Date(end + 'T00:00:00');
+    const sStr = s.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const eStr = e.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `${sStr} – ${eStr}`;
+  };
+
+  const ovDate = new Date(fertility.ovulationDate + 'T00:00:00');
+  const ovStr = ovDate.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  const confidenceLabels = {
+    low: 'Limited data — treat as a rough guess',
+    medium: 'Based on a few cycles — becoming more accurate',
+    high: 'Based on 6+ cycles — fairly reliable',
+  };
+
+  return (
+    <View style={styles.fertilityCard}>
+      <Text style={styles.fertilityTitle}>Fertile window estimate</Text>
+      <Text style={styles.fertilityRange}>
+        {formatRange(fertility.fertileWindowStart, fertility.fertileWindowEnd)}
+      </Text>
+      <Text style={styles.fertilityPeak}>
+        Peak fertility: {formatRange(fertility.peakStart, fertility.peakEnd)}
+      </Text>
+      <Text style={styles.fertilityOvulation}>
+        Estimated ovulation: {ovStr}
+      </Text>
+      <Text style={styles.fertilityMeta}>
+        Based on {fertility.averageCycleLength}-day average cycle
+      </Text>
+      <View style={styles.disclaimerRow}>
+        <Text style={styles.disclaimerIcon}>ℹ</Text>
+        <Text style={styles.disclaimer}>
+          {confidenceLabels[fertility.confidence]}
+        </Text>
+      </View>
+      <View style={styles.fertilityDisclaimerRow}>
+        <Text style={styles.fertilityDisclaimer}>
+          ⚠ Estimates only. Not intended for contraception. Consult a healthcare provider for fertility guidance.
         </Text>
       </View>
     </View>
@@ -338,6 +402,61 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.small,
     color: colors.textSecondary,
     lineHeight: 18,
+  },
+
+  // Fertility
+  fertilityCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.fertility,
+    ...shadows.card,
+  },
+  fertilityTitle: {
+    fontFamily: typography.fontMedium,
+    fontSize: typography.sizes.caption,
+    color: colors.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: spacing.xs,
+  },
+  fertilityRange: {
+    fontFamily: typography.fontMedium,
+    fontSize: typography.sizes.title,
+    color: colors.text,
+    marginBottom: spacing.xs,
+  },
+  fertilityPeak: {
+    fontFamily: typography.fontRegular,
+    fontSize: typography.sizes.body,
+    color: colors.text,
+    marginBottom: 2,
+  },
+  fertilityOvulation: {
+    fontFamily: typography.fontRegular,
+    fontSize: typography.sizes.small,
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
+  },
+  fertilityMeta: {
+    fontFamily: typography.fontRegular,
+    fontSize: typography.sizes.small,
+    color: colors.textSecondary,
+    marginBottom: spacing.md,
+  },
+  fertilityDisclaimerRow: {
+    backgroundColor: colors.background,
+    borderRadius: radii.sm,
+    padding: spacing.md,
+    marginTop: spacing.sm,
+  },
+  fertilityDisclaimer: {
+    fontFamily: typography.fontRegular,
+    fontSize: typography.sizes.caption,
+    color: colors.textSecondary,
+    lineHeight: 16,
   },
 
   // Chart

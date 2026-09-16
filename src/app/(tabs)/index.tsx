@@ -18,6 +18,7 @@ import type { FlowIntensity } from '@/design/tokens';
 export default function CalendarScreen() {
   const router = useRouter();
   const {
+    summary,
     logEntry,
     removeEntry,
     getEntriesForMonth,
@@ -25,6 +26,8 @@ export default function CalendarScreen() {
     isLoaded,
     checkOnboarding,
     onboardingComplete,
+    fertilityEnabled,
+    loadFertilitySetting,
   } = useCycleData();
 
   // Current displayed month
@@ -46,6 +49,7 @@ export default function CalendarScreen() {
   useEffect(() => {
     const init = async () => {
       await checkOnboarding();
+      await loadFertilitySetting();
       await refreshData();
     };
     init();
@@ -140,6 +144,7 @@ export default function CalendarScreen() {
           year={currentYear}
           month={currentMonth}
           entries={monthEntries}
+          fertilityPrediction={fertilityEnabled ? summary?.fertility ?? null : null}
           onDayPress={handleDayPress}
           onPrevMonth={goToPrevMonth}
           onNextMonth={goToNextMonth}
@@ -153,6 +158,13 @@ export default function CalendarScreen() {
           <LegendDot color={colors.flowMedium} label="Medium" />
           <LegendDot color={colors.flowHeavy} label="Heavy" />
         </View>
+
+        {fertilityEnabled && summary?.fertility && (
+          <View style={styles.legend}>
+            <LegendDot color={colors.fertility} label="Fertile" />
+            <LegendDot color={colors.fertilityPeak} label="Peak fertile" />
+          </View>
+        )}
       </ScrollView>
 
       <FlowSelector
