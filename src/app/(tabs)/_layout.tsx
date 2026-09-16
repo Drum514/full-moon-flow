@@ -16,7 +16,7 @@ function TabIcon({ label, focused }: { label: string; focused: boolean }) {
     Calendar: '◉',
     History: '☰',
     Analytics: '◎',
-    Settings: '⚙',
+    Settings: '⚙︎',
   };
 
   return (
