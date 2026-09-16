@@ -18,6 +18,7 @@ import {
 import { useCycleData } from '@/hooks/useCycleData';
 import { shareCSV } from '@/lib/export/csv';
 import { colors, spacing, radii, typography, shadows } from '@/design/tokens';
+import Constants from 'expo-constants';
 
 export default function SettingsScreen() {
   const { entries, fertilityEnabled, setFertilityEnabled, loadFertilitySetting } = useCycleData();
@@ -102,7 +103,7 @@ export default function SettingsScreen() {
           <View style={styles.rowContent}>
             <Text style={styles.rowTitle}>Full Moon Flow</Text>
             <Text style={styles.rowDescription}>
-              Version 1.1.0
+              Version {Constants.expoConfig?.version ?? '1.2.0'}
             </Text>
           </View>
         </View>
